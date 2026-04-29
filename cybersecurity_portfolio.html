@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CyberSec Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --green:#00ff41;--green2:#00cc33;--green3:#008f11;
+    --cyan:#00ffff;--red:#ff0040;--dark:#0a0a0a;
+    --darker:#050505;--card:#0d1117;--border:#1a3a1a;
+    --text:#c9d1d9;--muted:#8b949e
+  }
+  body{background:var(--dark);color:var(--text);font-family:'Rajdhani',sans-serif;overflow-x:hidden;cursor:crosshair}
+  body::before{
+    content:'';position:fixed;top:0;left:0;width:100%;height:100%;
+    background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,65,0.015) 2px,rgba(0,255,65,0.015) 4px);
+    pointer-events:none;z-index:0;animation:scan 8s linear infinite
+  }
+  @keyframes scan{0%{background-position:0 0}100%{background-position:0 100px}}
+  canvas#matrix{position:fixed;top:0;left:0;z-index:0;opacity:0.07;pointer-events:none}
+
+  /* NAV */
+  nav{position:fixed;top:0;width:100%;z-index:100;background:rgba(5,5,5,0.9);border-bottom:1px solid var(--border);padding:12px 40px;display:flex;justify-content:space-between;align-items:center;backdrop-filter:blur(10px)}
+  .nav-logo{font-family:'Orbitron',monospace;color:var(--green);font-size:18px;font-weight:900;letter-spacing:3px}
+  .nav-logo span{color:var(--red)}
+  .nav-links{display:flex;gap:30px;list-style:none}
+  .nav-links a{color:var(--muted);text-decoration:none;font-family:'Share Tech Mono',monospace;font-size:13px;transition:color .3s;letter-spacing:1px}
+  .nav-links a:hover{color:var(--green)}
+  .edit-btn{background:transparent;border:1px solid var(--green);color:var(--green);padding:6px 16px;font-family:'Share Tech Mono',monospace;font-size:12px;cursor:pointer;letter-spacing:2px;transition:all .3s;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%)}
+  .edit-btn:hover,.edit-btn.active{background:var(--green);color:#000}
+
+  /* MAIN */
+  main{position:relative;z-index:1;padding-top:60px}
+
+  /* HERO */
+  .hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:40px;position:relative}
+  .hero-content{max-width:900px}
+  .terminal-tag{font-family:'Share Tech Mono',monospace;color:var(--green);font-size:13px;letter-spacing:3px;margin-bottom:20px;opacity:0;animation:fadeIn .5s .5s forwards}
+  .hero h1{font-family:'Orbitron',monospace;font-size:clamp(36px,6vw,80px);font-weight:900;line-height:1.1;margin-bottom:20px;opacity:0;animation:fadeIn .5s 1s forwards}
+  .hero h1 .name{color:var(--green);text-shadow:0 0 30px rgba(0,255,65,0.5)}
+  .hero h1 .role{color:var(--text);font-size:clamp(16px,3vw,36px);display:block;margin-top:8px;font-weight:400;letter-spacing:8px}
+  .typed-text{font-family:'Share Tech Mono',monospace;color:var(--cyan);font-size:clamp(12px,2vw,18px);margin:20px 0 30px;min-height:24px}
+  .cursor-blink{animation:blink 1s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+  .hero-buttons{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;opacity:0;animation:fadeIn .5s 2s forwards}
+  .btn-primary{background:var(--green);color:#000;padding:12px 32px;font-family:'Orbitron',monospace;font-size:13px;font-weight:700;border:none;cursor:pointer;letter-spacing:2px;clip-path:polygon(12px 0%,100% 0%,calc(100% - 12px) 100%,0% 100%);transition:all .3s}
+  .btn-primary:hover{background:var(--cyan);box-shadow:0 0 20px rgba(0,255,255,0.4)}
+  .btn-outline{background:transparent;color:var(--green);padding:12px 32px;font-family:'Orbitron',monospace;font-size:13px;font-weight:700;border:1px solid var(--green);cursor:pointer;letter-spacing:2px;clip-path:polygon(12px 0%,100% 0%,calc(100% - 12px) 100%,0% 100%);transition:all .3s}
+  .btn-outline:hover{background:rgba(0,255,65,0.1)}
+  .glitch{position:relative}
+  .glitch::before,.glitch::after{content:attr(data-text);position:absolute;top:0;left:0;width:100%;height:100%}
+  .glitch::before{color:var(--red);animation:glitch1 3s infinite;clip-path:polygon(0 0,100% 0,100% 45%,0 45%)}
+  .glitch::after{color:var(--cyan);animation:glitch2 3s infinite;clip-path:polygon(0 55%,100% 55%,100% 100%,0 100%)}
+  @keyframes glitch1{0%,90%,100%{transform:translate(0)}92%{transform:translate(-3px,1px)}94%{transform:translate(3px,-1px)}96%{transform:translate(-2px,2px)}}
+  @keyframes glitch2{0%,90%,100%{transform:translate(0)}93%{transform:translate(3px,1px)}95%{transform:translate(-3px,-1px)}97%{transform:translate(2px,1px)}}
+
+  /* STATS BAR */
+  .stats-bar{background:var(--card);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:20px 40px;display:grid;grid-template-columns:repeat(4,1fr);gap:20px;text-align:center}
+  .stat-item{position:relative}
+  .stat-num{font-family:'Orbitron',monospace;font-size:28px;color:var(--green);font-weight:900}
+  .stat-label{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:2px;margin-top:4px}
+
+  /* SECTIONS */
+  section{padding:80px 40px;max-width:1200px;margin:0 auto}
+  .section-header{margin-bottom:50px}
+  .section-tag{font-family:'Share Tech Mono',monospace;color:var(--green);font-size:12px;letter-spacing:4px;margin-bottom:10px}
+  .section-title{font-family:'Orbitron',monospace;font-size:clamp(24px,4vw,40px);font-weight:900;color:var(--text)}
+  .section-title span{color:var(--green)}
+  .section-line{width:60px;height:2px;background:linear-gradient(90deg,var(--green),transparent);margin-top:16px}
+
+  /* ABOUT */
+  .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
+  .about-text{font-size:16px;line-height:1.8;color:var(--text)}
+  .about-text p{margin-bottom:16px}
+  .terminal-box{background:var(--darker);border:1px solid var(--border);border-radius:4px;overflow:hidden}
+  .terminal-header{background:#1a1a1a;padding:10px 16px;display:flex;gap:8px;align-items:center}
+  .dot{width:12px;height:12px;border-radius:50%}
+  .dot.red{background:#ff5f57}.dot.yellow{background:#febc2e}.dot.green{background:#28c840}
+  .terminal-body{padding:20px;font-family:'Share Tech Mono',monospace;font-size:13px;line-height:2}
+  .t-green{color:var(--green)}.t-cyan{color:var(--cyan)}.t-red{color:var(--red)}.t-muted{color:var(--muted)}
+
+  /* SKILLS */
+  .skills-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}
+  .skill-card{background:var(--card);border:1px solid var(--border);padding:24px;position:relative;overflow:hidden;transition:border-color .3s}
+  .skill-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--green)}
+  .skill-card:hover{border-color:var(--green)}
+  .skill-card h3{font-family:'Orbitron',monospace;font-size:14px;color:var(--green);margin-bottom:16px;letter-spacing:2px}
+  .skill-bar{margin-bottom:12px}
+  .skill-bar-label{display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text);margin-bottom:6px}
+  .skill-bar-label span:last-child{color:var(--green)}
+  .skill-bar-track{height:4px;background:#1a1a1a;border-radius:0;overflow:hidden}
+  .skill-bar-fill{height:100%;background:linear-gradient(90deg,var(--green3),var(--green));width:0;transition:width 1.5s cubic-bezier(.4,0,.2,1);border-radius:0}
+
+  /* PROJECTS */
+  .projects-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:24px}
+  .project-card{background:var(--card);border:1px solid var(--border);overflow:hidden;position:relative;transition:transform .3s,border-color .3s}
+  .project-card:hover{transform:translateY(-4px);border-color:var(--green)}
+  .project-card-top{padding:24px;border-bottom:1px solid var(--border)}
+  .project-badge{display:inline-block;background:rgba(0,255,65,0.1);color:var(--green);font-family:'Share Tech Mono',monospace;font-size:10px;padding:3px 10px;letter-spacing:2px;margin-bottom:12px;border:1px solid rgba(0,255,65,0.3)}
+  .project-card h3{font-family:'Orbitron',monospace;font-size:16px;color:var(--text);margin-bottom:8px}
+  .project-card p{font-size:14px;color:var(--muted);line-height:1.7}
+  .project-card-bottom{padding:16px 24px;display:flex;gap:8px;flex-wrap:wrap}
+  .tag{background:#0d1117;border:1px solid var(--border);color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 10px;letter-spacing:1px}
+
+  /* CERTIFICATIONS */
+  .certs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+  .cert-card{background:var(--card);border:1px solid var(--border);padding:24px;text-align:center;position:relative;overflow:hidden;transition:all .3s}
+  .cert-card::after{content:'';position:absolute;bottom:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent);transform:scaleX(0);transition:transform .4s}
+  .cert-card:hover::after{transform:scaleX(1)}
+  .cert-icon{font-size:32px;margin-bottom:12px}
+  .cert-name{font-family:'Orbitron',monospace;font-size:12px;color:var(--green);letter-spacing:2px;margin-bottom:8px}
+  .cert-org{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted)}
+  .cert-status{display:inline-block;margin-top:10px;font-family:'Share Tech Mono',monospace;font-size:10px;padding:3px 10px;letter-spacing:1px}
+  .cert-status.earned{background:rgba(0,255,65,0.1);color:var(--green);border:1px solid rgba(0,255,65,0.3)}
+  .cert-status.pursuing{background:rgba(0,255,255,0.1);color:var(--cyan);border:1px solid rgba(0,255,255,0.3)}
+
+  /* CONTACT */
+  .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+  .contact-info{display:flex;flex-direction:column;gap:20px}
+  .contact-item{display:flex;align-items:center;gap:16px;padding:16px;background:var(--card);border:1px solid var(--border);transition:border-color .3s}
+  .contact-item:hover{border-color:var(--green)}
+  .contact-item-icon{width:40px;height:40px;background:rgba(0,255,65,0.1);display:flex;align-items:center;justify-content:center;font-size:18px;border:1px solid rgba(0,255,65,0.3);flex-shrink:0}
+  .contact-item-text{font-family:'Share Tech Mono',monospace;font-size:13px}
+  .contact-item-label{color:var(--muted);font-size:10px;letter-spacing:2px;margin-bottom:4px}
+  .contact-item-val{color:var(--green)}
+
+  /* EDIT PANEL */
+  .edit-panel{position:fixed;right:-420px;top:0;width:420px;height:100vh;background:#0a0e13;border-left:1px solid var(--border);z-index:999;overflow-y:auto;transition:right .4s cubic-bezier(.4,0,.2,1);padding:20px}
+  .edit-panel.open{right:0}
+  .edit-panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+  .edit-panel-header h2{font-family:'Orbitron',monospace;font-size:14px;color:var(--green);letter-spacing:3px}
+  .close-edit{background:transparent;border:1px solid var(--border);color:var(--muted);width:32px;height:32px;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:16px;transition:all .3s}
+  .close-edit:hover{border-color:var(--red);color:var(--red)}
+  .edit-section{margin-bottom:24px;padding:16px;background:var(--card);border:1px solid var(--border)}
+  .edit-section-title{font-family:'Orbitron',monospace;font-size:11px;color:var(--cyan);letter-spacing:3px;margin-bottom:16px}
+  .edit-field{margin-bottom:14px}
+  .edit-field label{display:block;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:2px;margin-bottom:6px}
+  .edit-field input,.edit-field textarea,.edit-field select{width:100%;background:#050505;border:1px solid var(--border);color:var(--text);padding:8px 12px;font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;transition:border-color .3s;resize:vertical}
+  .edit-field input:focus,.edit-field textarea:focus{border-color:var(--green)}
+  .save-btn{width:100%;background:var(--green);color:#000;border:none;padding:12px;font-family:'Orbitron',monospace;font-size:12px;font-weight:700;letter-spacing:3px;cursor:pointer;transition:all .3s;margin-top:8px}
+  .save-btn:hover{background:var(--cyan)}
+
+  /* FOOTER */
+  footer{background:var(--darker);border-top:1px solid var(--border);padding:30px 40px;text-align:center}
+  footer p{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:2px}
+  footer span{color:var(--green)}
+
+  @keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+  .scan-line{position:fixed;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent);animation:scanLine 4s linear infinite;z-index:999;pointer-events:none;opacity:0.3}
+  @keyframes scanLine{0%{top:-2px}100%{top:100vh}}
+
+  @media(max-width:768px){
+    .about-grid,.contact-grid{grid-template-columns:1fr}
+    .stats-bar{grid-template-columns:repeat(2,1fr)}
+    nav{padding:12px 20px}
+    section{padding:60px 20px}
+  }
+</style>
+</head>
+<body>
+
+<canvas id="matrix"></canvas>
+<div class="scan-line"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo" id="site-logo">Vipul<span>_</span>PORTFOLIO</div>
+  <ul class="nav-links">
+    <li><a href="#about">[ABOUT]</a></li>
+    <li><a href="#skills">[SKILLS]</a></li>
+    <li><a href="#projects">[PROJECTS]</a></li>
+    <li><a href="#certs">[CERTS]</a></li>
+    <li><a href="#contact">[CONTACT]</a></li>
+  </ul>
+  <button class="edit-btn" id="toggleEdit">> EDIT_MODE</button>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-content">
+    <div class="terminal-tag">// INITIALIZING PORTFOLIO.EXE ...</div>
+    <h1>
+      <span class="glitch name" id="hero-name" data-text="KUMAWAT VIPUL">KUMAWAT VIPUL</span>
+      <span class="role" id="hero-role">ETHICAL HACKER & PENTESTER</span>
+    </h1>
+    <div class="typed-text" id="typed-text"><span id="typed"></span><span class="cursor-blink">█</span></div>
+    <div class="hero-buttons">
+      <button class="btn-primary" onclick="scrollToSection('projects')">VIEW PROJECTS</button>
+      <button class="btn-outline" onclick="scrollToSection('contact')">CONTACT ME</button>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="stat-num" id="stat1">2</div>
+    <div class="stat-label">// CTF_WINS</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num" id="stat2">2+</div>
+    <div class="stat-label">// PROJECTS</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num" id="stat3">1</div>
+    <div class="stat-label">// CERTS</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num" id="stat4">Fresher</div>
+    <div class="stat-label">// YEARS_EXP</div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-header">
+    <div class="section-tag">// 01 — WHO_AM_I.TXT</div>
+    <h2 class="section-title">ABOUT <span>ME</span></h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="about-grid">
+    <div>
+      <div class="about-text" id="about-text">
+        <p id="about-p1">I'm a cybersecurity student and aspiring penetration tester with a deep passion for ethical hacking. I specialize in finding vulnerabilities before the bad guys do.</p>
+        <p id="about-p2">From network reconnaissance to web application exploits, I've spent hours in CTF competitions, home labs, and studying real-world attack vectors. My mission: protect systems by thinking like an attacker.</p>
+        <p id="about-p3">Currently pursuing mcs cybersecurity with certifications and building hands-on experience through bug bounty programs, CTF challenges, TryHackMe and personal projects.</p>
+      </div>
+    </div>
+    <div class="terminal-box">
+      <div class="terminal-header">
+        <div class="dot red"></div>
+        <div class="dot yellow"></div>
+        <div class="dot green"></div>
+      </div>
+      <div class="terminal-body">
+        <div><span class="t-green">vipul@kali</span><span class="t-muted">:</span><span class="t-cyan">~</span><span class="t-muted">$</span> whoami</div>
+        <div class="t-muted" id="term-name">kumawat_vipul</div>
+        <div><span class="t-green">vipul@kali</span><span class="t-muted">:</span><span class="t-cyan">~</span><span class="t-muted">$</span> cat info.txt</div>
+        <div><span class="t-cyan">Location:</span> <span class="t-muted" id="term-location">India 🇮🇳</span></div>
+        <div><span class="t-cyan">Focus:</span> <span class="t-muted">Penetration Testing</span></div>
+        <div><span class="t-cyan">Tools:</span> <span class="t-muted">Kali, Burp, Metasploit</span></div>
+        <div><span class="t-cyan">Status:</span> <span class="t-green">AVAILABLE FOR HIRE ✓</span></div>
+        <div><span class="t-green">vipul@kali</span><span class="t-muted">:</span><span class="t-cyan">~</span><span class="t-muted">$</span> <span class="cursor-blink">█</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills" style="background:rgba(0,0,0,0.3)">
+  <div style="max-width:1200px;margin:0 auto">
+  <div class="section-header">
+    <div class="section-tag">// 02 — CAPABILITIES.SH</div>
+    <h2 class="section-title">SKILL <span>SET</span></h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="skills-grid">
+    <div class="skill-card">
+      <h3>⚡ WEB SECURITY</h3>
+      <div class="skill-bar"><div class="skill-bar-label"><span>SQL Injection</span><span></span></div><div class="skill-bar-track"><div class="skill-bar-fill" data-width=""></div></div></div>
+      <div class="skill-bar"><div class="skill-bar-label"><span>XSS / CSRF</span><span></span></div><div class="skill-bar-track"><div class="skill-bar-fill" data-width=""></div></div></div>
+      <div class="skill-bar"><div class="skill-bar-label"><span>OWASP Top 10</span><span></span></div><div class="skill-bar-track"><div class="skill-bar-fill" data-width=""></div></div></div>
+      <div class="skill-bar"><div class="skill-bar-label"><span>Burp Suite</span><span></span></div><div class="skill-bar-track"><div class="skill-bar-fill" data-width=""></div></div></div>
+    </div>
+    <div class="skill-card">
+      <h3>🔴 NETWORK PENTESTING</h3>
+      <div class="skill-bar"><div class="skill-bar-label"><span>Nmap / Recon</span><span></span></div><div class="skill-bar-track"><div class="skill-bar-fill" data-width=""></div></div></div>
+      <div class="skill-bar"><div class="skill-bar-label"><span>Metasploit</span><span></span></div><div class="skill-bar-track"><div class="skill-bar-fill" data-width=""></div></div></div>
+      <div class="skill-bar"><div class="skill-bar-label"><span>Wireshark</span><span></span></div><div class="skill-bar-track"><div class="skill-bar-fill" data-width=""></div></div></div>
+    </div>
+    <div class="skill-card">
+      <h3>💻 PROGRAMMING</h3>
+      <div class="skill-bar"><div class="skill-bar-label"><span>Python</span><span></span></div><div class="skill-bar-track"><div class="skill-bar-fill" data-width=""></div></div></div>
+      <div class="skill-bar"><div class="skill-bar-label"><span>JavaScript</span><span></span></div><div class="skill-bar-track"><div class="skill-bar-fill" data-width=""></div></div></div>
+    </div>
+  </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="section-header">
+    <div class="section-tag">// 03 — PROJECTS.LOG</div>
+    <h2 class="section-title">HACK <span>LABS</span></h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="projects-grid" id="projects-container">
+    <div class="project-card">
+      <div class="project-card-top">
+        <div class="project-badge">WEB SECURITY</div>
+        <h3>Vulnerable Web App Pentest</h3>
+        <p>Full penetration test on DVWA — discovered and documented 12 critical vulnerabilities including RCE, SQLi, and broken authentication.</p>
+      </div>
+      <div class="project-card-bottom">
+        <span class="tag">Burp Suite</span><span class="tag">SQLMap</span><span class="tag">Python</span>
+      </div>
+    </div>
+    <div class="project-card">
+      <div class="project-card-top">
+        <div class="project-badge">NETWORK</div>
+        <h3>Home Lab Network Assessment</h3>
+        <p>Built a home lab environment and performed full network penetration test — from scanning to exploitation and post-exploitation persistence.</p>
+      </div>
+      <div class="project-card-bottom">
+        <span class="tag">Nmap</span><span class="tag">Metasploit</span><span class="tag">Kali Linux</span>
+      </div>
+    </div>
+    <div class="project-card">
+      <div class="project-card-top">
+        <div class="project-badge">CTF</div>
+        <h3>CTF Challenge Collection</h3>
+        <p>Solved 20+ CTF challenges across HackTheBox, TryHackMe, and PicoCTF — covering soc monitoring, forensics, and web exploitation.</p>
+      </div>
+      <div class="project-card-bottom">
+        <span class="tag">HackTheBox</span><span class="tag">TryHackMe</span><span class="tag">Ghidra</span>
+      </div>
+    </div>
+    <div class="project-card">
+      <div class="project-card-top">
+        <div class="project-badge">AUTOMATION</div>
+        <h3>Custom Recon Tool</h3>
+        <p>Developed an automated reconnaissance tool in Python — performs subdomain enumeration, port scanning, and vulnerability, Whois enumeration.</p>
+      </div>
+      <div class="project-card-bottom">
+        <span class="tag">Python</span><span class="tag">APIs</span><span class="tag">OSINT</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CERTS -->
+<section id="certs" style="background:rgba(0,0,0,0.3)">
+  <div style="max-width:1200px;margin:0 auto">
+  <div class="section-header">
+    <div class="section-tag">// 04 — CREDENTIALS.DB</div>
+    <h2 class="section-title">CERTI<span>FICATIONS</span></h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="certs-grid">
+    <div class="cert-card">
+      <div class="cert-icon">🛡️</div>
+      <div class="cert-name">Soc Essential</div>
+      <div class="cert-org">Soc</div>
+      <span class="cert-status earned">EARNED</span>
+    </div>
+    
+ <!-- <div class="cert-card">
+      <div class="cert-icon">🔴</div>
+      <div class="cert-name">CEH</div>
+      <div class="cert-org">EC-Council</div>
+      <span class="cert-status pursuing">IN PROGRESS</span>
+    </div>
+    <div class="cert-card">
+      <div class="cert-icon">⚔️</div>
+      <div class="cert-name">OSCP</div>
+      <div class="cert-org">Offensive Security</div>
+      <span class="cert-status pursuing">PURSUING</span>
+    </div>
+    <div class="cert-card">
+      <div class="cert-icon">🌐</div>
+      <div class="cert-name">eJPT</div>
+      <div class="cert-org">eLearnSecurity</div>
+      <span class="cert-status earned">EARNED</span>
+    </div>
+  </div>
+  </div> -->
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="section-header">
+    <div class="section-tag">// 05 — CONNECT.SSH</div>
+    <h2 class="section-title">GET IN <span>TOUCH</span></h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="contact-grid">
+    <div class="contact-info">
+      <div class="contact-item">
+        <div class="contact-item-icon">📧</div>
+        <div class="contact-item-text">
+          <div class="contact-item-label">EMAIL</div>
+          <div class="contact-item-val" id="contact-email">vkumavat473@gmail.com.io</div>
+        </div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-item-icon">🔗</div>
+        <div class="contact-item-text">
+          <div class="contact-item-label">LINKEDIN</div>
+          <div class="contact-item-val" id="contact-linkedin">linkedin.com/in/kumawatvipul</div>
+        </div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-item-icon">🐱</div>
+        <div class="contact-item-text">
+          <div class="contact-item-label">GITHUB</div>
+          <div class="contact-item-val" id="contact-github">github.com/kumawatvipul</div>
+        </div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-item-icon">🏆</div>
+        <div class="contact-item-text">
+          <div class="contact-item-label">HACKTHEBOX</div>
+          <div class="contact-item-val" id="contact-htb">app.hackthebox.com/kumawatvipul</div>
+        </div>
+      </div>
+    </div>
+    <div class="terminal-box">
+      <div class="terminal-header">
+        <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+      </div>
+      <div class="terminal-body">
+        <div><span class="t-green">$</span> ssh contact@kumawat-vipul.io</div>
+        <div class="t-muted">Connecting to target...</div>
+        <div class="t-green">✓ Connection established</div>
+        <div style="margin-top:8px"><span class="t-cyan">Open to:</span></div>
+        <div class="t-muted">→ Bug Bounty Collaborations</div>
+        <div class="t-muted">→ Freelance Pentest Projects</div>
+        <div class="t-muted">→ Entry-level Security Roles</div>
+        <div class="t-muted">→ CTF Team Invitations</div>
+        <div style="margin-top:12px" class="t-green">Status: <span style="animation:pulse 2s infinite;display:inline-block">● ONLINE</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>DESIGNED & DEVELOPED BY <span id="footer-name">KUMAWAT VIPUL</span> // ALL SYSTEMS OPERATIONAL // <span>STAY ETHICAL</span></p>
+</footer>
+
+<!-- EDIT PANEL -->
+<div class="edit-panel" id="editPanel">
+  <div class="edit-panel-header">
+    <h2>> EDIT_MODE.EXE</h2>
+    <button class="close-edit" id="closeEdit">✕</button>
+  </div>
+
+  <div class="edit-section">
+    <div class="edit-section-title">// IDENTITY</div>
+    <div class="edit-field"><label>FULL NAME</label><input type="text" id="e-name" placeholder="Your Name"></div>
+    <div class="edit-field"><label>ROLE / TITLE</label><input type="text" id="e-role" placeholder="e.g. Ethical Hacker & Pentester"></div>
+    <div class="edit-field"><label>LOCATION</label><input type="text" id="e-location" placeholder="e.g. India 🇮🇳"></div>
+  </div>
+
+  <div class="edit-section">
+    <div class="edit-section-title">// ABOUT ME</div>
+    <div class="edit-field"><label>PARAGRAPH 1</label><textarea id="e-about1" rows="3"></textarea></div>
+    <div class="edit-field"><label>PARAGRAPH 2</label><textarea id="e-about2" rows="3"></textarea></div>
+    <div class="edit-field"><label>PARAGRAPH 3</label><textarea id="e-about3" rows="3"></textarea></div>
+  </div>
+
+  <div class="edit-section">
+    <div class="edit-section-title">// STATS</div>
+    <div class="edit-field"><label>CTF WINS</label><input type="text" id="e-stat1" placeholder="15+"></div>
+    <div class="edit-field"><label>PROJECTS</label><input type="text" id="e-stat2" placeholder="8+"></div>
+    <div class="edit-field"><label>CERTS</label><input type="text" id="e-stat3" placeholder="3+"></div>
+    <div class="edit-field"><label>YEARS EXP</label><input type="text" id="e-stat4" placeholder="2+"></div>
+  </div>
+
+  <div class="edit-section">
+    <div class="edit-section-title">// CONTACT INFO</div>
+    <div class="edit-field"><label>EMAIL</label><input type="text" id="e-email" placeholder="your@email.com"></div>
+    <div class="edit-field"><label>LINKEDIN</label><input type="text" id="e-linkedin" placeholder="linkedin.com/in/you"></div>
+    <div class="edit-field"><label>GITHUB</label><input type="text" id="e-github" placeholder="github.com/you"></div>
+    <div class="edit-field"><label>HACKTHEBOX</label><input type="text" id="e-htb" placeholder="app.hackthebox.com/you"></div>
+  </div>
+
+  <button class="save-btn" id="saveChanges">[ APPLY CHANGES ]</button>
+</div>
+
+<script>
+// MATRIX RAIN
+(function(){
+  const canvas=document.getElementById('matrix');
+  const ctx=canvas.getContext('2d');
+  function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}
+  resize();window.addEventListener('resize',resize);
+  const chars='01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const cols=Math.floor(canvas.width/16);
+  const drops=Array(cols).fill(1);
+  setInterval(()=>{
+    ctx.fillStyle='rgba(0,0,0,0.05)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#00ff41';
+    ctx.font='14px Share Tech Mono';
+    drops.forEach((y,i)=>{
+      ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*16,y*16);
+      if(y*16>canvas.height&&Math.random()>.975)drops[i]=0;
+      drops[i]++;
+    });
+  },50);
+})();
+
+// TYPED TEXT
+(function(){
+  const phrases=['> Scanning for vulnerabilities...','> Exploiting weak authentication...','> Privilege escalation in progress...','> Report generated. System secured.','> Thinking like an attacker.','> Bug bounty hunter. CTF player.'];
+  let p=0,c=0,del=false;
+  const el=document.getElementById('typed');
+  function type(){
+    const cur=phrases[p];
+    if(!del){
+      el.textContent=cur.slice(0,++c);
+      if(c===cur.length){del=true;setTimeout(type,2000);return}
+    }else{
+      el.textContent=cur.slice(0,--c);
+      if(c===0){del=false;p=(p+1)%phrases.length}
+    }
+    setTimeout(type,del?40:80);
+  }
+  setTimeout(type,2500);
+})();
+
+// SKILL BARS ANIMATION
+function animateBars(){
+  document.querySelectorAll('.skill-bar-fill').forEach(b=>{
+    b.style.width=b.dataset.width+'%';
+  });
+}
+const obs=new IntersectionObserver(e=>{e.forEach(en=>{if(en.isIntersecting)animateBars()})},{threshold:0.3});
+const skillSec=document.getElementById('skills');
+if(skillSec)obs.observe(skillSec);
+
+// SMOOTH SCROLL
+function scrollToSection(id){
+  const el=document.getElementById(id);
+  if(el)el.scrollIntoView({behavior:'smooth'});
+}
+document.querySelectorAll('.nav-links a').forEach(a=>{
+  a.addEventListener('click',e=>{
+    e.preventDefault();
+    const id=a.getAttribute('href').slice(1);
+    scrollToSection(id);
+  });
+});
+
+// EDIT PANEL
+const panel=document.getElementById('editPanel');
+const toggleBtn=document.getElementById('toggleEdit');
+const closeBtn=document.getElementById('closeEdit');
+
+toggleBtn.addEventListener('click',()=>{
+  panel.classList.toggle('open');
+  toggleBtn.classList.toggle('active');
+  if(panel.classList.contains('open'))loadValues();
+});
+closeBtn.addEventListener('click',()=>{
+  panel.classList.remove('open');
+  toggleBtn.classList.remove('active');
+});
+
+function loadValues(){
+  document.getElementById('e-name').value=document.getElementById('hero-name').textContent;
+  document.getElementById('e-role').value=document.getElementById('hero-role').textContent;
+  document.getElementById('e-location').value=document.getElementById('term-location').textContent;
+  document.getElementById('e-about1').value=document.getElementById('about-p1').textContent;
+  document.getElementById('e-about2').value=document.getElementById('about-p2').textContent;
+  document.getElementById('e-about3').value=document.getElementById('about-p3').textContent;
+  document.getElementById('e-stat1').value=document.getElementById('stat1').textContent;
+  document.getElementById('e-stat2').value=document.getElementById('stat2').textContent;
+  document.getElementById('e-stat3').value=document.getElementById('stat3').textContent;
+  document.getElementById('e-stat4').value=document.getElementById('stat4').textContent;
+  document.getElementById('e-email').value=document.getElementById('contact-email').textContent;
+  document.getElementById('e-linkedin').value=document.getElementById('contact-linkedin').textContent;
+  document.getElementById('e-github').value=document.getElementById('contact-github').textContent;
+  document.getElementById('e-htb').value=document.getElementById('contact-htb').textContent;
+}
+
+document.getElementById('saveChanges').addEventListener('click',()=>{
+  const name=document.getElementById('e-name').value||'KUMAWAT VIPUL';
+  document.getElementById('hero-name').textContent=name;
+  document.getElementById('hero-name').dataset.text=name;
+  document.getElementById('hero-role').textContent=document.getElementById('e-role').value||'ETHICAL HACKER & PENTESTER';
+  document.getElementById('term-location').textContent=document.getElementById('e-location').value;
+  document.getElementById('term-name').textContent=name.toLowerCase().replace(' ','_');
+  document.getElementById('about-p1').textContent=document.getElementById('e-about1').value;
+  document.getElementById('about-p2').textContent=document.getElementById('e-about2').value;
+  document.getElementById('about-p3').textContent=document.getElementById('e-about3').value;
+  document.getElementById('stat1').textContent=document.getElementById('e-stat1').value;
+  document.getElementById('stat2').textContent=document.getElementById('e-stat2').value;
+  document.getElementById('stat3').textContent=document.getElementById('e-stat3').value;
+  document.getElementById('stat4').textContent=document.getElementById('e-stat4').value;
+  document.getElementById('contact-email').textContent=document.getElementById('e-email').value;
+  document.getElementById('contact-linkedin').textContent=document.getElementById('e-linkedin').value;
+  document.getElementById('contact-github').textContent=document.getElementById('e-github').value;
+  document.getElementById('contact-htb').textContent=document.getElementById('e-htb').value;
+  document.getElementById('footer-name').textContent=name;
+  
+  // Flash confirm
+  const btn=document.getElementById('saveChanges');
+  btn.textContent='[ ✓ CHANGES APPLIED ]';
+  btn.style.background='var(--cyan)';
+  setTimeout(()=>{btn.textContent='[ APPLY CHANGES ]';btn.style.background='';},2000);
+});
+</script>
+</body>
+</html>
